@@ -1,5 +1,8 @@
 require 'rack/request'
 require 'rack/response'
+require 'haml'
+require 'thin'
+require 'rack'
   
 module RockPaperScissors
   class App 
@@ -7,7 +10,7 @@ module RockPaperScissors
     def initialize(app = nil)
       @app = app
       @content_type = :html
-      @defeat = {'rock' => 'scissors', 'paper' => 'rock', 'scissors' => 'paper'}
+      @defeat = {'piedra' => 'tijeras', 'papel' => 'piedra', 'tijeras' => 'papel'}
       @throws = @defeat.keys
       @choose = @throws.map { |x| 
          %Q{ <li><a href="/?choice=#{x}">#{x}</a></li> }
@@ -22,28 +25,24 @@ module RockPaperScissors
  
       computer_throw = @throws.sample
       player_throw = req.GET["choice"]
-      anwser = if !@throws.include?(player_throw)
-          "Choose one of the following:"
+      answer = if !@throws.include?(player_throw)
+          "EAAAA"
         elsif player_throw == computer_throw
-          "You tied with the computer"
+          "Empate"
         elsif computer_throw == @defeat[player_throw]
-          "Nicely done; #{player_throw} beats #{computer_throw}"
+          "Bien hecho; #{player_throw} gana a #{computer_throw}"
         else
-          "Ouch; #{computer_throw} beats #{player_throw}. Better luck next time!"
+          "Vaya... #{computer_throw} gana #{player_throw}. Mucha suerte la proxima vez!"
         end
   
       res = Rack::Response.new
-      res.write <<-"EOS"
-      <html>
-       <title>rps</title>
-       <body>
-          <h1>
-             #{anwser}
-             #{@choose}
-          </h1>
-        </body>
-      </html>
-      EOS
+      engine = Haml::Engine.new File.open("views/index.haml").read
+      res.write engine.render({}, 
+        :answer => answer, 
+        :choose => @choose,
+        :throws => @throws,
+        :computer_throw => computer_throw,
+        :player_throw => player_throw)
       res.finish
     end # call
   end   # App
