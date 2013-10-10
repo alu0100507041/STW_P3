@@ -26,7 +26,7 @@ module RockPaperScissors
       computer_throw = @throws.sample
       player_throw = req.GET["choice"]
       answer = if !@throws.include?(player_throw)
-          "EAAAA"
+          " "
         elsif player_throw == computer_throw
           "Empate"
         elsif computer_throw == @defeat[player_throw]
